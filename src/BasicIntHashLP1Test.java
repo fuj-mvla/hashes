@@ -89,6 +89,7 @@ class BasicIntHashLP1Test {
 		assertEquals(0,hash.size());
 		assertTrue(hash.isEmpty());
 		for (int i = 0; i < size; i++) {
+			
 			assertTrue(hash.add(i));
 			assertEquals(i, hash.getHashAt(i, 0));
 			assertFalse(hash.isEmpty());
