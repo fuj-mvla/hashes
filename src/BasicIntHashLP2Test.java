@@ -378,6 +378,7 @@ class BasicIntHashLP2Test {
 			}
 			assertEquals(checkSize,hash.getTableSize());
 		}
+		System.out.println(checkSize);
 		assertTrue(hash.add(checkSize - 1));  
 	}
 	
@@ -407,6 +408,7 @@ class BasicIntHashLP2Test {
 		}
 
 		int checkSize = size;
+	
 		for (int i = 0; i < size; i++) {
 			assertTrue(hash.add(randInts.get(i)));
 			assertTrue(hash.contains(randInts.get(i)));

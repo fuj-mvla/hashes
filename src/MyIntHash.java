@@ -17,6 +17,8 @@ public class MyIntHash {
 	/** The mode of operation. */
 	private MODE mode = MODE.Linear;
 	
+	private final int MAX_QP_OFFSET = 2<<15;
+	
 	/** The physical table size. */
 	private int tableSize;
 	
@@ -98,6 +100,7 @@ public class MyIntHash {
 		//      Note that you cannot just use size in the numerator... 
 		//      Write the code to implement this check and call growHash() if required (no parameters)
 		
+		
 		switch (mode) {
 			case Linear : return add_LP(key); 
 			default : return add_LP(key);
@@ -158,6 +161,18 @@ public class MyIntHash {
 	 */
 	private void growHash(int[] table, int newSize) {
 		// TODO Part2:  Write this method
+		int[] currTable = table;
+		System.out.println("growing");
+		 hashTable1 = new int[newSize];
+			tableSize = newSize;
+		clear();
+	
+				
+		for (int i=0;i<currTable.length;i++) {
+			if (currTable[i]!=-1) {
+				add(currTable[i]);
+			}
+		}
 	}
 	
 	/**
@@ -169,7 +184,11 @@ public class MyIntHash {
 	 */
 	private int getNewTableSize(int startSize) {
 		// TODO Part2: Write this method
-		return -1;
+		int newSize = 2*startSize;
+		while (!isPrime(newSize)) {
+			newSize++;
+		}
+		return newSize;
 	}
 	
 	/**
@@ -180,7 +199,12 @@ public class MyIntHash {
 	 */
 	private boolean isPrime(int size) {
 		// TODO Part2: Write this method
-		return false;
+		for (int i=2;i<Math.sqrt(size);i++) {
+			if (size%i==0) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	/**
@@ -197,16 +221,22 @@ public class MyIntHash {
 	 */
 	private boolean add_LP(int key) {
 		// TODO Part1: Write this function
-
+		if ((size+1)/(tableSize*1.0)>=load_factor) {
+			
+			growHash();
+		}
 		int index = hashFx(key);
+		
+		
 		for (int i=0;i<tableSize;i++) {
-	
-			if (hashTable1[index]==-1) {
+			
+			if (hashTable1[index]==-1||hashTable1[index]==-2) {
 				hashTable1[index]=key;
 				size++;
 				return true;
 			}
 			else if(hashTable1[index]==key) {
+			
 				return false;
 			}
 			index++;
@@ -216,6 +246,7 @@ public class MyIntHash {
 				
 			
 		}
+		
 		return false;
 	}
 	
@@ -235,6 +266,7 @@ public class MyIntHash {
 	 */
 	private boolean contains_LP(int key) {
 		int index=hashFx(key);
+		
 		for (int i=0;i<tableSize;i++) {
 			if (hashTable1[index]==-1) {
 				return false;
@@ -269,7 +301,46 @@ public class MyIntHash {
 	 */
 	private boolean remove_LP(int key) {
 		// TODO Part2: Write this function
-		return false;		
+		int index = hashFx(key);
+		
+		if (!contains_LP(key)) {
+			return false;
+		}
+		for (int i=0;i< tableSize;i++) {
+			if (hashTable1[index]==key) {
+			
+				break;
+			}
+			index++;
+			if(index>=tableSize) {
+				index=0;
+			}
+			
+		}
+		int target = getTarget(index);
+	
+		if (hashTable1[target]!=-1) {
+			hashTable1[index]=-2;
+		}
+		else {
+			hashTable1[index]=-1;
+		}
+		size--;
+		return true;		
+	}
+	
+	/**
+	 * Gets the target, checks if the index is the last index of the table and sets the target to 0, otherwise target will be index+1
+	 *
+	 * @return the index
+	 */
+	private int getTarget(int index) {
+		if (index==tableSize-1) {
+			return 0;
+		}
+		else {
+			return index+1;
+		}
 	}
 		
 	/**
