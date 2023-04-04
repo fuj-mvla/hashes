@@ -18,6 +18,7 @@ public class MyIntHash {
 	private MODE mode = MODE.Linear;
 	
 	private final int MAX_QP_OFFSET = 2<<15;
+	private  int 	max_QP_LOOP;
 	
 	/** The physical table size. */
 	private int tableSize;
@@ -55,6 +56,12 @@ public class MyIntHash {
 		size=0;
 		hashTable1=new int[INITIAL_SIZE];
 		initHashTable(hashTable1);
+		if ((tableSize/2) < MAX_QP_OFFSET) {
+			max_QP_LOOP = tableSize/2;
+		}
+		else {
+			max_QP_LOOP = MAX_QP_OFFSET;
+		}
 	}
 
 	/**
@@ -100,10 +107,15 @@ public class MyIntHash {
 		//      Note that you cannot just use size in the numerator... 
 		//      Write the code to implement this check and call growHash() if required (no parameters)
 		
-		
+		if ((size+1)/(tableSize*1.0)>=load_factor) {
+			
+			growHash();
+		}
 		switch (mode) {
 			case Linear : return add_LP(key); 
+			case Quadratic : return add_QP(key);
 			default : return add_LP(key);
+			
 		}
 	}
 	
@@ -116,7 +128,8 @@ public class MyIntHash {
 	 */
 	public boolean contains(int key) {
 		switch (mode) {
-			case Linear : return contains_LP(key); 
+			case Linear : return contains_LP(key);
+			case Quadratic: return contains_QP(key);
 			default : return contains_LP(key);
 		}
 	}
@@ -131,6 +144,7 @@ public class MyIntHash {
 	public boolean remove(int key) {
 		switch (mode) {
 			case Linear : return remove_LP(key); 
+			case Quadratic : return remove_QP(key);
 			default : return remove_LP(key);
 		}
 	}
@@ -145,6 +159,7 @@ public class MyIntHash {
 		int newSize = getNewTableSize(tableSize);
 		switch (mode) {
 		case Linear: growHash(hashTable1,newSize); break;
+		case Quadratic :growHashQP(hashTable1,newSize); break;
 		}
 	}
 	
@@ -162,7 +177,7 @@ public class MyIntHash {
 	private void growHash(int[] table, int newSize) {
 		// TODO Part2:  Write this method
 		int[] currTable = table;
-		System.out.println("growing");
+	
 		 hashTable1 = new int[newSize];
 			tableSize = newSize;
 		clear();
@@ -173,6 +188,16 @@ public class MyIntHash {
 				add(currTable[i]);
 			}
 		}
+	}
+	private void growHashQP(int[]table,int newSize) {
+		growHash(table,newSize);
+		if ((tableSize/2) < MAX_QP_OFFSET) {
+			max_QP_LOOP = tableSize/2;
+		}
+		else {
+			max_QP_LOOP = MAX_QP_OFFSET;
+		}
+		
 	}
 	
 	/**
@@ -221,10 +246,7 @@ public class MyIntHash {
 	 */
 	private boolean add_LP(int key) {
 		// TODO Part1: Write this function
-		if ((size+1)/(tableSize*1.0)>=load_factor) {
-			
-			growHash();
-		}
+		
 		int index = hashFx(key);
 		
 		
@@ -247,6 +269,26 @@ public class MyIntHash {
 			
 		}
 		
+		return false;
+	}
+	
+	private boolean add_QP(int key) {
+		
+		int st_index = hashFx(key);
+		for (int i=0;i<max_QP_LOOP;i++) {
+			int index = (st_index+i*i)%tableSize;
+			if (hashTable1[index]==-1||hashTable1[index]==-2) {
+				hashTable1[index]=key;
+				size++;
+				return true;
+			}
+			if (hashTable1[index]==key) {
+				return false;
+			}
+		}
+		for (int i=0;i<tableSize;i++) {
+			System.out.println(i+":"+hashTable1[i]);
+		}
 		return false;
 	}
 	
@@ -282,7 +324,19 @@ public class MyIntHash {
 		}
 		return false;
 	}
-	
+	 private boolean contains_QP(int key) {
+			int st_index = hashFx(key);
+			for (int i=0;i<max_QP_LOOP;i++) {
+				int index = (st_index+i*i)%tableSize;
+				if (hashTable1[index]==-1) {
+					return false;
+				}
+				else if (hashTable1[index]==key) {
+					return true;
+				}
+			}
+			return false;
+	 }
 	/**
 	 * Remove - uses the Linear Problem method to evict a key from the hash, if it exists
 	 * A key requirement of this function is that the evicted key cannot introduce an open space
@@ -318,7 +372,6 @@ public class MyIntHash {
 			
 		}
 		int target = getTarget(index);
-	
 		if (hashTable1[target]!=-1) {
 			hashTable1[index]=-2;
 		}
@@ -328,7 +381,26 @@ public class MyIntHash {
 		size--;
 		return true;		
 	}
-	
+	private boolean remove_QP(int key) {
+		if (!contains_QP(key)) {
+			return false;
+		}
+		
+		int index=0;
+		int st_index = hashFx(key);
+		for (int i=0;i<max_QP_LOOP;i++) {
+			 index = (st_index+i*i)%tableSize;
+			if (hashTable1[index]==key) {
+				
+				break;
+			}
+		}
+		hashTable1[index] =-2;
+		
+		size--;
+		return true;
+		
+	}
 	/**
 	 * Gets the target, checks if the index is the last index of the table and sets the target to 0, otherwise target will be index+1
 	 *
@@ -355,6 +427,7 @@ public class MyIntHash {
 		// TODO Part1: as you code this project, you will add different cases. for now, complete the case for Linear Probing
 		switch (mode) {
 		case Linear : return hashTable1[index+offset];
+		case Quadratic: return hashTable1[index+offset];
 		}
 		return -1;
 	}
