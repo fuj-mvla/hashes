@@ -179,7 +179,7 @@ public class MyIntHash {
 		int[] currTable = table;
 	
 		 hashTable1 = new int[newSize];
-			tableSize = newSize;
+		tableSize = newSize;
 		clear();
 	
 				
@@ -286,10 +286,9 @@ public class MyIntHash {
 				return false;
 			}
 		}
-		for (int i=0;i<tableSize;i++) {
-			System.out.println(i+":"+hashTable1[i]);
-		}
-		return false;
+		growHash();
+		
+		return add_QP(key);
 	}
 	
 	/**
