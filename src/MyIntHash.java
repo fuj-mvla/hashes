@@ -55,7 +55,9 @@ public class MyIntHash {
 		tableSize=INITIAL_SIZE;
 		size=0;
 		hashTable1=new int[INITIAL_SIZE];
+		hashTableLL = new LinkedList[INITIAL_SIZE];
 		initHashTable(hashTable1);
+		initHashTable(hashTableLL);
 		if ((tableSize/2) < MAX_QP_OFFSET) {
 			max_QP_LOOP = tableSize/2;
 		}
@@ -81,6 +83,12 @@ public class MyIntHash {
 		size=0;
 	}
 	
+	private void initHashTable(LinkedList<Integer>[] hashtable) {
+		for (int i=0;i<tableSize;i++) {
+			hashtable[i] =null;
+		}
+		size=0;
+	}
 	/**
 	 * Hash fx.  This is the hash function that translates the key into the index into the hash table.
 	 *
@@ -114,6 +122,7 @@ public class MyIntHash {
 		switch (mode) {
 			case Linear : return add_LP(key); 
 			case Quadratic : return add_QP(key);
+			case LinkedList: return add_LL(key);
 			default : return add_LP(key);
 			
 		}
@@ -130,6 +139,7 @@ public class MyIntHash {
 		switch (mode) {
 			case Linear : return contains_LP(key);
 			case Quadratic: return contains_QP(key);
+			case LinkedList: return contains_LL(key);
 			default : return contains_LP(key);
 		}
 	}
@@ -145,6 +155,7 @@ public class MyIntHash {
 		switch (mode) {
 			case Linear : return remove_LP(key); 
 			case Quadratic : return remove_QP(key);
+			case LinkedList: return remove_LL(key);
 			default : return remove_LP(key);
 		}
 	}
@@ -160,6 +171,7 @@ public class MyIntHash {
 		switch (mode) {
 		case Linear: growHash(hashTable1,newSize); break;
 		case Quadratic :growHashQP(hashTable1,newSize); break;
+		case LinkedList: growHash(hashTableLL,newSize);break;
 		}
 	}
 	
@@ -189,13 +201,41 @@ public class MyIntHash {
 			}
 		}
 	}
+	
+	/**
+	 * Grow hash for qp
+	 *
+	 * @param table the table
+	 * @param newSize the new size
+	 */
 	private void growHashQP(int[]table,int newSize) {
 		growHash(table,newSize);
 		if ((tableSize/2) < MAX_QP_OFFSET) {
-			max_QP_LOOP = tableSize/2;
+			max_QP_LOOP = tableSize>>2;
 		}
 		else {
 			max_QP_LOOP = MAX_QP_OFFSET;
+		}
+		
+	}
+	
+	/**
+	 * method for growing the hash for LL
+	 *
+	 * @param hashTable the hash table
+	 * @param newSize the new size
+	 */
+	private void growHash(LinkedList<Integer>[] hashTable, int newSize) {
+		LinkedList<Integer>[] curr = hashTable;
+		hashTableLL = new LinkedList[newSize];
+		tableSize = newSize;
+		clear();
+		for (int i=0;i<curr.length;i++) {
+			if (curr[i]!=null) {
+				for (int j=0;j<curr[i].size();j++) {
+					add(curr[i].get(j));
+				}
+			}
 		}
 		
 	}
@@ -272,6 +312,12 @@ public class MyIntHash {
 		return false;
 	}
 	
+	/**
+	 * Adds the key to the ap list
+	 *
+	 * @param key the key
+	 * @return true, if successful
+	 */
 	private boolean add_QP(int key) {
 		
 		int st_index = hashFx(key);
@@ -289,6 +335,29 @@ public class MyIntHash {
 		growHash();
 		
 		return add_QP(key);
+	}
+	
+	
+	/**
+	 * Adds the key to the ll hash.
+	 *
+	 * @param key the key
+	 * @return true, if successful
+	 */
+	private boolean add_LL(int key) {
+		int index = hashFx(key);
+		
+		if (hashTableLL[index]==null) {
+			hashTableLL[index]  = new LinkedList<Integer>();
+		}
+		if (hashTableLL[index].contains(key)) {
+			
+			return false;
+		}
+		else {
+			size++;
+			return hashTableLL[index].add(key);
+		}
 	}
 	
 	/**
@@ -323,7 +392,14 @@ public class MyIntHash {
 		}
 		return false;
 	}
-	 private boolean contains_QP(int key) {
+	 
+ 	/**
+ 	 * contains check for qp
+ 	 *
+ 	 * @param key the key
+ 	 * @return true, if successful
+ 	 */
+ 	private boolean contains_QP(int key) {
 			int st_index = hashFx(key);
 			for (int i=0;i<max_QP_LOOP;i++) {
 				int index = (st_index+i*i)%tableSize;
@@ -336,6 +412,23 @@ public class MyIntHash {
 			}
 			return false;
 	 }
+ 	
+ 	/**
+	  * Contains for LL
+	  *
+	  * @param key the key
+	  * @return true, if successful
+	  */
+	 private boolean contains_LL(int key) {
+ 		int index = hashFx(key);
+ 		if (hashTableLL[index]==null) {
+ 			return false;
+ 		}
+ 		else {
+ 			return hashTableLL[index].contains(key);
+ 		}
+ 		
+ 	}
 	/**
 	 * Remove - uses the Linear Problem method to evict a key from the hash, if it exists
 	 * A key requirement of this function is that the evicted key cannot introduce an open space
@@ -380,6 +473,13 @@ public class MyIntHash {
 		size--;
 		return true;		
 	}
+	
+	/**
+	 * Removing for qp
+	 *
+	 * @param key the key
+	 * @return true, if successful
+	 */
 	private boolean remove_QP(int key) {
 		if (!contains_QP(key)) {
 			return false;
@@ -399,6 +499,23 @@ public class MyIntHash {
 		size--;
 		return true;
 		
+	}
+	
+	/**
+	 * Removing for LL
+	 *
+	 * @param key the key
+	 * @return true, if successful
+	 */
+	private boolean remove_LL(int key) {
+		int index = hashFx(key);
+		if (hashTableLL[index].remove((Integer)key)) {
+			size--;
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 	/**
 	 * Gets the target, checks if the index is the last index of the table and sets the target to 0, otherwise target will be index+1
@@ -422,13 +539,31 @@ public class MyIntHash {
 	 * @param offset the offset
 	 * @return the hash at
 	 */
-	int getHashAt(int index, int offset) {
+	Integer getHashAt(int index, int offset) {
 		// TODO Part1: as you code this project, you will add different cases. for now, complete the case for Linear Probing
 		switch (mode) {
 		case Linear : return hashTable1[index+offset];
 		case Quadratic: return hashTable1[index+offset];
+		case LinkedList: return contains_LL(index,offset);
 		}
 		return -1;
+	}
+	
+	/**
+	 * contains method for get hashat,
+	 *
+	 * @param index the index
+	 * @param offset the offset
+	 * @return the integer
+	 */
+	Integer contains_LL(int index,int offset) {
+		if (hashTableLL[index]==null||hashTableLL[index].size()==0) {
+			return null;
+		}
+		if (offset <0 || offset>=hashTableLL[index].size()) {
+			return -1;
+		}
+		return hashTableLL[index].get(offset);
 	}
 	
 	/**
@@ -447,9 +582,15 @@ public class MyIntHash {
 	 */
 	public void clear() {
 		// TODO Part1: Write this metho
-		initHashTable(hashTable1);
+		switch (mode) {
+		case Linear: 	initHashTable(hashTable1);
+		case Quadratic: 	initHashTable(hashTable1);
+		case LinkedList: initHashTable(hashTableLL);
+		}
+	
 		
 	}
+	
 
 	/**
 	 * Returns a boolean to indicate of the hash is empty
