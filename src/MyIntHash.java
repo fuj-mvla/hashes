@@ -84,6 +84,7 @@ public class MyIntHash {
 	}
 	
 	private void initHashTable(LinkedList<Integer>[] hashtable) {
+		
 		for (int i=0;i<tableSize;i++) {
 			hashtable[i] =null;
 		}
@@ -582,16 +583,19 @@ public class MyIntHash {
 	 */
 	public void clear() {
 		// TODO Part1: Write this metho
-		switch (mode) {
-		case Linear: 	initHashTable(hashTable1);
-		case Quadratic: 	initHashTable(hashTable1);
-		case LinkedList: initHashTable(hashTableLL);
-		}
+		
+	if (mode.equals(MODE.Quadratic) ||mode.equals(MODE.Linear)) {
+		initHashTable(hashTable1); 
+	}
+	else {
+		initHashTable(hashTableLL); 
+	}
+		
 	
 		
 	}
 	
-
+	
 	/**
 	 * Returns a boolean to indicate of the hash is empty
 	 *
