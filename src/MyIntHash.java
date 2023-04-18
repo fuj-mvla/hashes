@@ -720,7 +720,7 @@ public class MyIntHash {
 		
 		initHashTable(hashTable1); 
 	}
-	else if (mode.equals(MODE.Linear)){
+	else if (mode.equals(MODE.LinkedList)){
 		
 		initHashTable(hashTableLL); 
 	}
