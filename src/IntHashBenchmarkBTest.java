@@ -257,7 +257,9 @@ class IntHashBenchmarkBTest {
 			System.out.println("\n\nBenchmark "+dataSet.replaceAll(".csv","")+" Linear Hash Implementation - Iteration "+iter);
 			for (int loop = 0; loop < lfLimit.length; loop++) {
 				// TODO: add elements to the hash until it is just greater than the load factor limit
-
+				for (;hash.getCurrLoadFactor()<lfLimit[loop];dataIndex++) {
+					hash.add(dSet[dataIndex]);
+				}
 				// this will generate a hundred random keys that will exist or miss in the hash
 				if (iter == 0 ) {
 					hit[loop] = genNRandomInts(Arrays.copyOfRange(dSet,0, dataIndex));
@@ -314,6 +316,33 @@ class IntHashBenchmarkBTest {
 			int dataIndex = 0;
 			System.out.println("\n\nBenchmark "+dataSet.replaceAll(".csv","")+" Quadratic Hash Implementation - Iteration "+iter);
 			// TODO: Write this method - but use QP for reporting the data
+			
+			for (int loop = 0; loop < lfLimit.length; loop++) {
+				// TODO: add elements to the hash until it is just greater than the load factor limit
+				for (;hash.getCurrLoadFactor()<lfLimit[loop];dataIndex++) {
+					hash.add(dSet[dataIndex]);
+				}
+				// this will generate a hundred random keys that will exist or miss in the hash
+				if (iter == 0 ) {
+					hit[loop] = genNRandomInts(Arrays.copyOfRange(dSet,0, dataIndex));
+					miss[loop] = genNRandomInts(Arrays.copyOfRange(dSet,dataIndex,dSet.length - 1));
+				}
+
+				// measure the time to do NUM_HIT_MISS contains checks on numbers guaranteed to be in the hash
+				avgContains = measureContains(hit[loop]);
+				// measure the time to do NUM_HIT_MISS contains checks on numbers guaranteed to NOT be in the hash
+				avgContainsMiss = measureContains(miss[loop]);
+				// measure the time to request NUM_HIT_MISS removes - number are all initially in the hash
+				avgRemove = measureRemove(hit[loop]);
+				// measure the time to do NUM_HIT_MISS inserts - all numbers initially are NOT in the hash...
+				avgAdd = measureAdd(hit[loop]);
+
+				reportData(QP,loop,iter);
+				if (iter == 0) {
+					analyzeHash(QP,loop);
+				}
+
+			}
 		}
 		assertTrue(true);
 	}
@@ -348,8 +377,34 @@ class IntHashBenchmarkBTest {
 			hash = new MyIntHash(MyIntHash.MODE.LinkedList,1.1,TEST_SIZE);
 			int dataIndex = 0;
 			System.out.println("\n\nBenchmark "+dataSet.replaceAll(".csv","")+" LinkedList Hash Implementation - Iteration "+iter);
-			//TODO: Write this method - but use LL for reporting the data
+			for (int loop = 0; loop < lfLimit.length; loop++) {
+				// TODO: add elements to the hash until it is just greater than the load factor limit
+				for (;hash.getCurrLoadFactor()<lfLimit[loop];dataIndex++) {
+					hash.add(dSet[dataIndex]);
+				}
+				// this will generate a hundred random keys that will exist or miss in the hash
+				if (iter == 0 ) {
+					hit[loop] = genNRandomInts(Arrays.copyOfRange(dSet,0, dataIndex));
+					miss[loop] = genNRandomInts(Arrays.copyOfRange(dSet,dataIndex,dSet.length - 1));
+				}
+
+				// measure the time to do NUM_HIT_MISS contains checks on numbers guaranteed to be in the hash
+				avgContains = measureContains(hit[loop]);
+				// measure the time to do NUM_HIT_MISS contains checks on numbers guaranteed to NOT be in the hash
+				avgContainsMiss = measureContains(miss[loop]);
+				// measure the time to request NUM_HIT_MISS removes - number are all initially in the hash
+				avgRemove = measureRemove(hit[loop]);
+				// measure the time to do NUM_HIT_MISS inserts - all numbers initially are NOT in the hash...
+				avgAdd = measureAdd(hit[loop]);
+
+				reportData(LL,loop,iter);
+				if (iter == 0) {
+					analyzeHash(LL,loop);
+				}
+
+			}
 		}
+		
 		assertTrue(true);
 	}
 

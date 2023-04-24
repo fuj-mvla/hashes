@@ -67,6 +67,25 @@ public class MyIntHash {
 		}
 	}
 
+	public MyIntHash(MODE mode, double load_factor, int testSize) {
+		// TODO Auto-generated constructor stub
+		this.load_factor = load_factor;
+		this.mode = mode;
+		tableSize=testSize;
+		size=0;
+		hashTable1=new int[testSize];
+		hashTable2 = new int[testSize];
+		hashTableLL = new LinkedList[testSize];
+		initHashTable(hashTable1,hashTable2);
+		initHashTable(hashTableLL);
+		if ((tableSize/2) < MAX_QP_OFFSET) {
+			max_QP_LOOP = tableSize/2;
+		}
+		else {
+			max_QP_LOOP = MAX_QP_OFFSET;
+		}
+	}
+
 	/**
 	 * Initializes the provided int[] hashTable - setting all entries to -1
 	 * Note that this function will be overloaded to initialize hash tables in other modes
@@ -411,21 +430,15 @@ public class MyIntHash {
 		}
 	}
 	 private boolean add_Cuckoo(int key) {
-		
 		 if (contains_CC(key)) {
-			
 			 return false;
 		 }
 		 
 		 if (!place_Cuckoo(key,hashTable1,key)) {
-		
 			 growHash();
-			
 			 return add_Cuckoo(key);
 		 }
 		 else {
-			 size++;
-			
 			 return true;
 		 }
 		
@@ -456,7 +469,7 @@ public class MyIntHash {
 			 }
 			 else {
 				 hashTable[index]= key;
-				 
+				 size++;
 				 return true;
 			 }
 		 
@@ -760,6 +773,10 @@ public class MyIntHash {
 	 */
 	public void setLoad_factor(double load_factor) {
 		this.load_factor = load_factor;
+	}
+	
+	public double getCurrLoadFactor() {
+		return size/(tableSize*1.0);
 	}
 
 	/**
