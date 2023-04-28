@@ -456,8 +456,6 @@ public class MyIntHash {
 			  newTable = hashTable1;
 			  
 		 }
-		 
-		 
 		 if (hashTable[index]!=-1) {
 				 int newKey = hashTable[index];
 				 if (newKey==origKey&& hashTable==hashTable2) {
@@ -777,6 +775,9 @@ public class MyIntHash {
 	
 	public double getCurrLoadFactor() {
 		return size/(tableSize*1.0);
+	}
+	public double getCurrLoadFactorCC() {
+		return (double)size/(double)tableSize*2.0;
 	}
 
 	/**
